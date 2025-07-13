@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Case 1: Part 2</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    #bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-image: url('C1_Profile_Inspection.jpg');
+      background-size: cover;
+      background-position: center;
+      z-index: -1;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .overlay-content {
+      text-align: center;
+      max-width: 600px;
+      padding: 2em;
+      background: rgba(30, 30, 30, 0.9);
+      border-radius: 12px;
+    }
+
+    .overlay-content button {
+      padding: 12px 28px;
+      font-size: 1.1em;
+      background-color: #a56cf4;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .overlay-content button:hover {
+      background-color: #8b54d1;
+    }
+
+    button {
+      padding: 0.6em 1.2em;
+      font-size: 1em;
+      background-color: #2ebd89;
+      color: black;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 0.5em;
+    }
+
+    button:hover {
+      background-color: #c58b45;
+    }
+
+    #questionContainer {
+      position: fixed;
+      top: 10%;
+      right: 5%;
+      background: rgba(0, 0, 0, 0.75);
+      padding: 1.5em;
+      border-radius: 12px;
+      width: 300px;
+      color: white;
+      z-index: 20;
+      display: none;
+      box-shadow: 0 0 12px rgba(0,0,0,0.5);
+    }
+
+    #questionText {
+      margin-bottom: 1em;
+      text-align: center;
+      min-height: 60px;
+    }
+
+    #answerButtons {
+      display: flex;
+      justify-content: center;
+      gap: 1em;
+      margin-bottom: 1em;
+    }
+
+    .answer-button {
+      background-color: #333;
+      color: white;
+      border: 2px solid transparent;
+      padding: 0.5em 1.2em;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .answer-button.selected {
+      border-color: #a56cf4;
+      box-shadow: 0 0 8px #a56cf4;
+    }
+
+    #navigationRow {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1em;
+    }
+
+    #submitBtn {
+      display: none;
+      padding: 0.5em 1em;
+      border: none;
+      border-radius: 6px;
+      background-color: #2ebd89;
+      color: black;
+      cursor: pointer;
+    }
+
+    #proceedBtn {
+      display: none;
+      padding: 0.5em 1em;
+      border: none;
+      border-radius: 6px;
+      background-color: #a56cf4;
+      color: white;
+      cursor: pointer;
+    }
+
+    #cluePopup {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    #clueNotebook {
+      display: none;
+      position: fixed;
+      right: 0;
+      top: 0;
+      background: rgba(0,0,0,0.85);
+      color: white;
+      padding: 1em;
+      width: 250px;
+      height: 100%;
+      overflow-y: auto;
+      z-index: 999;
+    }
+
+    #notebookBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #a56cf4;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 0.8em 1.2em;
+      font-size: 1em;
+      z-index: 100;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+      50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
+      100% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+    }
+
+    #proceedBtn.pulse {
+      animation: pulse 1.5s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div id="bg"></div>
+
+  <!-- Instruction Overlay -->
+  <div id="instructionOverlay" class="overlay">
+    <div class="overlay-content">
+      <h2>🕵️ Case 1:Part 2 Briefing</h2>
+      <p>You're almost there, detective. Review the image and answer the following questions to determine if the image is AI-generated.</p>
+      <button onclick="startInvestigation()">Start Investigation</button>
+    </div>
+  </div>
+
+  <!-- Question UI -->
+  <div id="questionContainer">
+    <div id="questionText">Question will appear here</div>
+    <div id="navigationRow">
+      <button id="prevBtn" onclick="prevQuestion()">←</button>
+      <button id="yesBtn" class="answer-button" onclick="selectAnswer('yes')">Yes</button>
+      <button id="noBtn" class="answer-button" onclick="selectAnswer('no')">No</button>
+      <button id="nextBtn" onclick="nextQuestion()">→</button>
+    </div>
+    <div style="text-align: center; margin-top: 1em;">
+      <button id="submitBtn" onclick="submitAnswers()">Submit</button>
+      <button id="proceedBtn" onclick="goToNextPage()">📖 Proceed to Story</button>
+    </div>
+  </div>
+
+  <!-- Clue Popup -->
+  <div id="cluePopup" class="overlay">
+    <div class="overlay-content">
+      <h2>🔍 Clue Unlocked!</h2>
+      <h3>[It is likely AI impersonation]</h3>
+      <p>You’ve gathered enough evidence. The image is likely AI-generated.</p>
+      <button onclick="closeCluePopup()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      { text: "Are the hands or fingers unnaturally shaped or positioned?", correctAnswer: "yes" },
+      { text: "Are there inconsistencies in lighting, or clothing patterns?", correctAnswer: "yes" },
+      { text: "Are there any watermarks?", correctAnswer: "no" },
+      { text: "Are there no issues with pixelation/blur?", correctAnswer: "no" },
+      { text: "Are there any extra body parts in the image?", correctAnswer: "yes" }
+    ];
+
+    let currentQuestionIndex = 0;
+    const userAnswers = Array(questions.length).fill(null);
+
+    function startInvestigation() {
+      document.getElementById("instructionOverlay").style.display = "none";
+      document.getElementById("questionContainer").style.display = "block";
+      displayQuestion();
+    }
+
+    function selectAnswer(answer) {
+      userAnswers[currentQuestionIndex] = userAnswers[currentQuestionIndex] === answer ? null : answer;
+      updateButtons();
+      updateNavigation();
+    }
+
+    function displayQuestion() {
+      document.getElementById("questionText").textContent = questions[currentQuestionIndex].text;
+      updateButtons();
+      updateNavigation();
+    }
+
+    function updateButtons() {
+      document.getElementById("yesBtn").classList.toggle("selected", userAnswers[currentQuestionIndex] === "yes");
+      document.getElementById("noBtn").classList.toggle("selected", userAnswers[currentQuestionIndex] === "no");
+    }
+
+    function updateNavigation() {
+      document.getElementById("prevBtn").style.display = currentQuestionIndex === 0 ? "none" : "inline-block";
+      document.getElementById("nextBtn").style.display = currentQuestionIndex === questions.length - 1 ? "none" : "inline-block";
+      const allAnswered = userAnswers.every(ans => ans !== null);
+      document.getElementById("submitBtn").style.display = allAnswered ? "inline-block" : "none";
+    }
+
+    function nextQuestion() {
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        displayQuestion();
+      }
+    }
+
+    function prevQuestion() {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        displayQuestion();
+      }
+    }
+
+    function submitAnswers() {
+  const correct = questions.every((q, i) => q.correctAnswer === userAnswers[i]);
+  if (correct) {
+    showCluePopup();
+    document.getElementById("submitBtn").style.display = "none"; // Hide submit
+  } else {
+    alert("❌ Some answers are incorrect. Please try again.");
+  }
+}
+
+    function showCluePopup() {
+  document.getElementById("cluePopup").style.display = "flex";
+  document.getElementById("clueNotebook").style.display = "block";
+    }
+
+  function closeCluePopup() {
+  document.getElementById("cluePopup").style.display = "none";
+  
+  const proceedBtn = document.getElementById("proceedBtn");
+  proceedBtn.style.display = "inline-block";
+  proceedBtn.classList.add("pulse");  // Add pulsing effect
+}
+
+    function goToNextPage() {
+      window.location.href = 'DC2_Pg5_C2.html';
+    }
+
+    window.onload = () => {
+      displayQuestion();
+    };
+  </script>
+</body>
+</html>

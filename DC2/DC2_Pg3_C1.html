@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Case 1: Intro Screen</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      transition: opacity 1s ease-in;
+    }
+    body { opacity: 0; }
+    body.fade-in { opacity: 1; }
+
+    #bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-image: url('C1_SS1.jpg');
+      z-index: -2;
+    }
+
+    #bgBlur {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 998;
+      transition: opacity 0.5s ease;
+    }
+
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .popup-content {
+      background: #222;
+      padding: 2rem;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 600px;
+      color: white;
+      animation: slideUp 0.5s ease;
+    }
+
+    .popup-content h2 { margin-bottom: 1rem; }
+    .popup-content ul { text-align: left; margin: 1rem 0; }
+    .popup-content button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #a56cf4;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .arrow {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 2.5em;
+      color: white;
+      background: rgba(0, 0, 0, 0.4);
+      border: none;
+      padding: 0.4em 0.6em;
+      cursor: pointer;
+      z-index: 5;
+      display: none;
+      transition: background 0.3s ease;
+    }
+    .arrow:hover { background: rgba(0, 0, 0, 0.7); }
+    #prevBtn { left: 445px; }
+    #nextBtn { right: 490px; }
+
+    #overlayContainer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .overlay {
+      position: absolute;
+      max-width: 80%;
+      max-height: 80%;
+      pointer-events: auto;
+      cursor: pointer;
+      display: none;
+    }
+    .overlay1 { top: 22%; left: 38%; width: 242px; }
+    .overlay2 { top: 38.5%; left: 38%; width: 242px; }
+    .overlay3 { top: 53%; left: 38%; width: 242px; }
+    .overlay4 { top: 67.5%; left: 38%; width: 242px; }
+    .overlay5 { top: 22%; left: 38.3%; width: 244px; }
+    .overlay6 { top: 42%; left: 38%; width: 242px; }
+    .overlay7 { top: 59%; left: 38%; width: 242px; }
+
+    #submitBtn {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.6em 1.5em;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      background-color: #2ebd89;
+      color: rgb(255, 255, 255);
+      cursor: pointer;
+      z-index: 10;
+      display: none;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div id="bg"></div>
+  <div id="bgBlur"></div>
+  <div id="instructionPopup" class="popup-overlay">
+    <div class="popup-content">
+      <h2>🕵️‍♀️ Case 1:Part 1 Briefing</h2>
+      <p>Welcome, detective. Your mission is to first inspect two screenshots and identify 3 suspicious messages</p>
+      <ul>
+        <li>Navigate between scenes using the <strong>Next</strong> and <strong>Prev</strong> arrow buttons.</li>
+        <li>Click on message bubbles in the scene to view potential clues.</li>
+        <li>Only <strong>3 messages</strong> are correct — choose wisely.</li>
+        <li>Click <strong>Submit</strong> once you've selected your 3 clues.</li>
+        <li>Zoom <strong>In/Out</strong> for better legibility.</li>
+      </ul>
+      <button onclick="startCase()">Start Investigation</button>
+    </div>
+  </div>
+
+  <button class="arrow" id="prevBtn" onclick="prevImage()">←</button>
+  <button class="arrow" id="nextBtn" onclick="nextImage()">→</button>
+  <button id="submitBtn" onclick="submitAnswers()">Submit</button>
+
+  <div id="overlayContainer">
+    <img src="DC2_AI_C1.png" class="overlay overlay1 hidden" id="overlay1" onclick="handleOverlayClick(1)" />
+    <img src="DC2_AI_C2.png" class="overlay overlay2 hidden" id="overlay2" onclick="handleOverlayClick(2)" />
+    <img src="DC2_AI_C3.png" class="overlay overlay3 hidden" id="overlay3" onclick="handleOverlayClick(3)" />
+    <img src="DC2_AI_C4.png" class="overlay overlay4 hidden" id="overlay4" onclick="handleOverlayClick(4)" />
+    <img src="DC2_AI_C5.png" class="overlay overlay5 hidden" id="overlay5" onclick="handleOverlayClick(5)" />
+    <img src="DC2_AI_C6.png" class="overlay overlay6 hidden" id="overlay6" onclick="handleOverlayClick(6)" />
+    <img src="DC2_AI_C7.png" class="overlay overlay7 hidden" id="overlay7" onclick="handleOverlayClick(7)" />
+  </div>
+
+  <script>
+    const backgrounds = ["C1_SS1.jpg", "C1_SS2.jpg"];
+    let currentIndex = 0;
+    const selectedClues = new Set();
+    const clickedClues = new Set();
+
+    window.onload = () => {
+      document.body.classList.add("fade-in");
+    };
+
+    function startCase() {
+      selectedClues.clear();
+      clickedClues.clear();
+
+      document.getElementById("instructionPopup").style.display = "none";
+      document.getElementById("bgBlur").style.display = "none";
+
+      document.getElementById("prevBtn").style.display = 'none';
+      document.getElementById("nextBtn").style.display = 'block';
+
+      for (let i = 1; i <= 7; i++) {
+        const overlay = document.getElementById(`overlay${i}`);
+        if (overlay) {
+          overlay.classList.remove("hidden");
+          overlay.style.boxShadow = "none";
+          overlay.style.opacity = "1";
+        }
+      }
+
+      updateBackground();
+      updateOverlay();
+    }
+
+    function updateBackground() {
+      const bg = document.getElementById('bg');
+      const image = backgrounds[currentIndex];
+      bg.style.backgroundImage = `url('${image}')`;
+
+      document.getElementById('prevBtn').style.display = currentIndex === 0 ? 'none' : 'block';
+      document.getElementById('nextBtn').style.display = currentIndex === backgrounds.length - 1 ? 'none' : 'block';
+    }
+
+    function prevImage() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateBackground();
+        updateOverlay();
+      }
+    }
+
+    function nextImage() {
+      if (currentIndex < backgrounds.length - 1) {
+        currentIndex++;
+        updateBackground();
+        updateOverlay();
+      }
+    }
+
+    function updateOverlay() {
+      for (let i = 1; i <= 7; i++) {
+        const el = document.getElementById(`overlay${i}`);
+        if (el) el.style.display = "none";
+      }
+      const showIds = currentIndex === 0 ? [1, 2, 3, 4] : [5, 6, 7];
+      showIds.forEach(i => {
+        const el = document.getElementById(`overlay${i}`);
+        if (el) el.style.display = "block";
+      });
+    }
+
+    function handleOverlayClick(index) {
+      const overlay = document.getElementById(`overlay${index}`);
+      if (selectedClues.has(index)) {
+        selectedClues.delete(index);
+        overlay.style.boxShadow = "none";
+        overlay.style.opacity = "1";
+      } else {
+        if (selectedClues.size >= 3) {
+          alert("You can only select up to 3 clues!");
+          return;
+        }
+        selectedClues.add(index);
+        overlay.style.boxShadow = "0 0 15px 5px #a56cf4";
+        overlay.style.opacity = "0.85";
+      }
+
+      const submitBtn = document.getElementById("submitBtn");
+      submitBtn.style.display = selectedClues.size === 3 ? "block" : "none";
+    }
+
+    function submitAnswers() {
+      const correctAnswers = [2, 4, 6];
+      const selected = Array.from(selectedClues).sort((a, b) => a - b);
+      const isCorrect = selected.length === correctAnswers.length && selected.every((val, i) => val === correctAnswers[i]);
+      if (isCorrect) {
+        alert("✅ Correct! Redirecting...");
+        window.location.href = "DC2_Pg4_C1.html";
+      } else {
+        alert("❌ Incorrect clues. Try again.");
+        resetSelections();
+      }
+    }
+
+    function resetSelections() {
+      selectedClues.clear();
+      for (let i = 1; i <= 7; i++) {
+        const overlay = document.getElementById(`overlay${i}`);
+        if (overlay) {
+          overlay.style.boxShadow = "none";
+          overlay.style.opacity = "1";
+        }
+      }
+      document.getElementById("submitBtn").style.display = "none";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zara Investigates</title>
+  <style>
+    :root {
+      --mint: rgb(46, 157, 112);
+      --light-mint: rgb(94, 188, 138);
+      --dark-purple: rgb(33, 7, 54);
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('Classroom Dark.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      height: 100%;
+      overflow-x: hidden;
+    }
+
+    #welcomeOverlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background-color: rgba(0,0,0,0.9);
+      color: white;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeIn 1.5s forwards;
+      text-align: center;
+      font-size: 1.5em;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    #welcomeOverlay.fade-out {
+      animation: fadeOut 0.6s forwards;
+    }
+
+    #scrollIntro {
+      height: 100vh;
+      width: 100%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2em;
+      text-align: center;
+      padding: 0 1em;
+      min-height: 150px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .scroll-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 0.15em solid white;
+  font-weight: 600;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 1.6em; /* reduced from 2.2em */
+}
+
+    .briefing-section {
+      height: 100vh;
+      background-color: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      color: var(--light-mint);
+      padding: 2em;
+      text-align: center;
+      font-size: 1.2em;
+    }
+    .briefing-section.active {
+      display: flex;
+      animation: fadeIn 1.5s forwards;
+    }
+
+    #startGameBtn {
+      margin-top: 1.5em;
+      font-size: 1.1em;
+      background-color: var(--mint);
+      color: var(--dark-purple);
+      border: none;
+      padding: 0.75em 1.5em;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    #startGameBtn:hover {
+      background-color: var(--light-mint);
+    }
+  </style>
+</head>
+<body>
+  <div id="welcomeOverlay">
+    <div id="welcomeMessage">
+      <h1>Welcome to Zara Investigates</h1>
+      <p>(Scroll to begin the story)</p>
+    </div>
+  </div>
+
+  <div id="scrollIntro"></div>
+
+  <div id="missionBriefing" class="briefing-section">
+    <div>
+      <h2>Mission Briefing</h2>
+      <p>Suzy is being harassed online.</p>
+      <p>Three clues. Two cases. One chance to protect.</p>
+      <p>As Zara, you will navigate cases involving:</p>
+      <ul>
+        <li>AI-generated personas</li>
+        <li>Privacy violations</li>
+        <li>Manipulative chatbot conversations</li>
+      </ul>
+      <p><strong>Tap below to begin your investigation.</strong></p>
+      <button id="startGameBtn">Start</button>
+    </div>
+  </div>
+
+  <script>
+    const welcomeOverlay = document.getElementById("welcomeOverlay");
+    const scrollIntro = document.getElementById("scrollIntro");
+    const mission = document.getElementById("missionBriefing");
+    const startBtn = document.getElementById("startGameBtn");
+
+    // The lines to type out
+    const lines = [
+      "You are playing as Zara",
+      "A 17-year-old with a sharp eye.",
+      "This morning you found out...",
+      "Your best friend was being harassed online.",
+      "Now, it's up to you to fix it.",
+      "(scroll to continue)"
+    ];
+
+    let animationReady = false;
+    let scrollTriggered = false;
+    let currentIndex = 0;
+
+    // Typing effect parameters
+    const typingSpeed = 50; // ms per character
+    const deletingSpeed = 25;
+    const pauseAfterTyping = 1000; // ms pause after typing full line
+    const pauseAfterDeleting = 500; // ms pause after deleting full line
+
+    // Create the span inside scrollIntro for typing
+    const typingSpan = document.createElement("span");
+    scrollIntro.appendChild(typingSpan);
+    typingSpan.classList.add("scroll-text");
+
+    // Typing function returns a promise that resolves after typing completes
+    function typeText(text) {
+      return new Promise(resolve => {
+        let i = 0;
+        typingSpan.textContent = "";
+        typingSpan.style.borderRight = "0.15em solid white";
+
+        function typeChar() {
+          if (i < text.length) {
+            typingSpan.textContent += text.charAt(i);
+            i++;
+            setTimeout(typeChar, typingSpeed);
+          } else {
+            // Done typing, pause then resolve
+            setTimeout(() => resolve(), pauseAfterTyping);
+          }
+        }
+        typeChar();
+      });
+    }
+
+    // Deleting function returns a promise that resolves after deleting completes
+    function deleteText() {
+      return new Promise(resolve => {
+        let text = typingSpan.textContent;
+        let i = text.length;
+
+        function deleteChar() {
+          if (i > 0) {
+            typingSpan.textContent = text.substring(0, i - 1);
+            i--;
+            setTimeout(deleteChar, deletingSpeed);
+          } else {
+            typingSpan.style.borderRight = "none";
+            setTimeout(() => resolve(), pauseAfterDeleting);
+          }
+        }
+        deleteChar();
+      });
+    }
+
+    // Run the full animation sequence
+    async function runAnimation() {
+      for (; currentIndex < lines.length; currentIndex++) {
+        await typeText(lines[currentIndex]);
+        await deleteText();
+      }
+      // After all lines are done, remove text and show mission briefing
+      typingSpan.textContent = "";
+      mission.style.display = "flex";
+      mission.classList.add("active");
+    }
+
+    // Dismiss overlay and start animation
+    function dismissOverlay() {
+      welcomeOverlay.classList.add("fade-out");
+      setTimeout(() => {
+        welcomeOverlay.style.display = "none";
+        animationReady = true;
+        runAnimation();
+      }, 600);
+    }
+
+    // Listen for scroll to dismiss overlay only once
+    window.addEventListener("scroll", () => {
+      if (!animationReady && !scrollTriggered) {
+        scrollTriggered = true;
+        dismissOverlay();
+      }
+    });
+
+    // Start button fade out and navigate
+    startBtn.addEventListener("click", () => {
+      document.body.style.opacity = "0";
+      setTimeout(() => {
+        window.location.href = "DC2_Pg2.html";
+      }, 800);
+    });
+  </script>
+</body>
+</html>

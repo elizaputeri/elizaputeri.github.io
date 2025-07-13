@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Case 2 Finale</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+      background-color: black;
+    }
+
+    .background, .intro-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transition: opacity 1s ease;
+      z-index: 0;
+    }
+
+    .background.visible, .intro-background.visible {
+      opacity: 1;
+    }
+
+    .typing-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2;
+      transition: opacity 1s ease;
+    }
+
+    .typing-overlay.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .typing-text {
+      color: white;
+      font-size: 1.8em;
+      text-align: center;
+      max-width: 80%;
+      line-height: 1.6em;
+    }
+
+    .next-button {
+      position: absolute;
+      bottom: 30px;
+      right: 30px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border: none;
+      padding: 0.8em 1.5em;
+      font-size: 1em;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 1s ease;
+      pointer-events: none;
+    }
+
+    .next-button.visible {
+      opacity: 1;
+      pointer-events: auto;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(179, 0, 255, 0.6);
+      }
+      70% {
+        box-shadow: 0 0 0 15px rgba(179, 0, 255, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(179, 0, 255, 0);
+      }
+    }
+
+    .fade-black {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: black;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      opacity: 1;
+      transition: opacity 1s ease;
+      pointer-events: none;
+    }
+
+    .fade-black.hidden {
+      opacity: 0;
+    }
+
+    /* 🎉 Completion Popup */
+    .completion-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .completion-popup.hidden {
+      display: none;
+    }
+
+    .popup-box {
+      background: #222;
+      color: white;
+      padding: 2.5rem 3.5rem;
+      border-radius: 12px;
+      text-align: center;
+      animation: slideUp 0.5s ease;
+    }
+
+    .popup-box h2 {
+      margin-bottom: 1.5rem;
+      font-size: 1.5em;
+    }
+
+    .popup-box button {
+      padding: 0.6em 1.5em;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      background-color: #a56cf4;
+      color: white;
+      cursor: pointer;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Black overlay at start -->
+  <div id="fade" class="fade-black"></div>
+
+  <!-- Intro background image -->
+  <div id="introBg" class="intro-background visible" style="background-image: url('DC2 Bench.jpg');"></div>
+
+  <!-- Typing overlay -->
+  <div id="typingOverlay" class="typing-overlay">
+    <div id="typingText" class="typing-text"></div>
+  </div>
+
+  <!-- Slideshow -->
+  <div id="bg11" class="background" style="background-image: url('DC2 Classroom Suzy_Z6D_END.jpg');"></div>
+  <div id="bg12" class="background" style="background-image: url('DC2 Classroom Suzy_S6D_END.jpg');"></div>
+  <div id="bg13" class="background" style="background-image: url('DC2 Classroom Suzy_Z7D_END.jpg');"></div>
+  <div id="bg14" class="background" style="background-image: url('DC2 Classroom Suzy_S7D_END.jpg');"></div>
+  <div id="bg15" class="background" style="background-image: url('DC2 Classroom Suzy_Z8D_END.jpg');"></div>
+  <div id="bg16" class="background" style="background-image: url('DC2 Classroom Suzy_S8D_END.jpg');"></div>
+  <div id="bg17" class="background" style="background-image: url('DC2 Classroom Suzy_Z9D_END.jpg');"></div>
+  <div id="bg18" class="background" style="background-image: url('DC2 Classroom Suzy_S9D_END.jpg');"></div>
+  <div id="bg19" class="background" style="background-image: url('DC2 Classroom Suzy_Z10D_END.jpg');"></div>
+  <div id="bg20" class="background" style="background-image: url('DC2 Classroom Suzy_Z11D_END.jpg');"></div>
+  <div id="bg21" class="background" style="background-image: url('DC2 Classroom Suzy_S10D_END.jpg');"></div>
+  <div id="bg22" class="background" style="background-image: url('DC2 Classroom Suzy_Z12D_END.jpg');"></div>
+
+  <!-- Next button -->
+  <button id="nextBtn" class="next-button" onclick="nextImage()">Next</button>
+
+  <!-- Completion Popup -->
+  <div id="completionPopup" class="completion-popup hidden">
+    <div class="popup-box">
+      <h2>🎉 Congratulations on completing Zara Investigates</h2>
+      <button onclick="goHome()">Go to Home</button>
+    </div>
+  </div>
+
+  <script>
+    const fade = document.getElementById("fade");
+    const typingOverlay = document.getElementById("typingOverlay");
+    const typingText = document.getElementById("typingText");
+    const introBackground = document.getElementById("introBg");
+    const nextBtn = document.getElementById("nextBtn");
+    const popup = document.getElementById("completionPopup");
+
+    const slideshow = [
+      document.getElementById("bg11"),
+      document.getElementById("bg12"),
+      document.getElementById("bg13"),
+      document.getElementById("bg14"),
+      document.getElementById("bg15"),
+      document.getElementById("bg16"),
+      document.getElementById("bg17"),
+      document.getElementById("bg18"),
+      document.getElementById("bg19"),
+      document.getElementById("bg20"),
+      document.getElementById("bg21"),
+      document.getElementById("bg22")
+    ];
+
+    let currentIndex = 0;
+    const typingLines = [
+      "Later that day after school...",
+      "You and Suzy talked at the park"
+    ];
+    let lineIndex = 0;
+    let charIndex = 0;
+
+    window.onload = () => {
+      setTimeout(() => {
+        fade.classList.add("hidden");
+        typeNextChar();
+      }, 300);
+    };
+
+    function typeNextChar() {
+      if (lineIndex < typingLines.length) {
+        const currentLine = typingLines[lineIndex];
+        typingText.innerHTML = currentLine.substring(0, charIndex + 1);
+        if (charIndex < currentLine.length) {
+          charIndex++;
+          setTimeout(typeNextChar, 50);
+        } else {
+          lineIndex++;
+          charIndex = 0;
+          setTimeout(typeNextChar, 1000);
+        }
+      } else {
+        setTimeout(() => {
+          typingOverlay.classList.add("fade-out");
+          introBackground.classList.remove("visible");
+          slideshow[0].classList.add("visible");
+          nextBtn.classList.add("visible");
+        }, 1500);
+      }
+    }
+
+    function nextImage() {
+      if (currentIndex < slideshow.length - 1) {
+        slideshow[currentIndex].classList.remove("visible");
+        currentIndex++;
+        slideshow[currentIndex].classList.add("visible");
+      } else {
+        // Final fade and popup
+        fade.classList.remove("hidden");
+        setTimeout(() => {
+          popup.classList.remove("hidden");
+        }, 1200);
+      }
+    }
+
+    function goHome() {
+      window.location.href = "DC2.html"; // change to your home page URL if needed
+    }
+  </script>
+</body>
+</html>

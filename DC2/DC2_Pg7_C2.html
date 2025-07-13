@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Case 2 Maze</title>
+  <style>
+    body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: url('Classroom Dark.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: white;
+  font-family: sans-serif;
+}
+
+#mazeContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 5px;
+}
+
+canvas {
+  display: block;
+  background-color: white; /* Maze background */
+  border: 1px solid black;
+}
+
+#instructions {
+  margin-top: 5px;
+  color: white; /* Add this line */
+}
+
+#fadeOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+  z-index: 9999;
+  animation: fadeOut 1.5s ease forwards;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+#instruction-box {
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 0.25em 0.5em;
+  border-radius: 0.5px;
+  font-size: 1.2em;
+  max-width: 1000px;
+  text-align: center;
+  margin-bottom: 1px;
+}
+
+.overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.overlay-content {
+  text-align: center;
+  max-width: 600px;
+  padding: 2em;
+  background: rgba(30, 30, 30, 0.9);
+  border-radius: 12px;
+}
+
+#privacyGame button {
+  font-size: 1.2em;
+  padding: 0.75em 1.5em;
+  margin: 0.5em;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-color: #444;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+#privacyGame button:hover {
+  box-shadow: 0 0 8px 4px #a56cf4;
+}
+#cluePopup button {
+  margin-top: 1em;
+  padding: 0.8em 2em;
+  background-color: #2ebd89; /* green */
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 1.2em;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(195, 255, 210, 0.6);
+  transition: background-color 0.3s ease;
+}
+
+#cluePopup button:hover {
+  background-color: #24946b; /* darker green on hover */
+}
+
+ </style>
+</head>
+<body>
+    <div id="fadeOverlay"></div>
+
+    <div id="instruction-box">
+        <p>
+          As you navigate through the maze to ensure your privacy is not breached by answering the questions.
+        </p>
+        <p>Bring the unlcok lock to the locked one</p>
+      </div>      
+
+<div id="mazeContainer">
+  <canvas id="mazeCanvas"></canvas>
+</div>
+
+<!-- Privacy Challenge -->
+<div id="privacyGame" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.8); z-index: 10005; justify-content: center; align-items: center;">
+    <div class="overlay-content" style="color: white; text-align: center; background: rgba(30, 30, 30, 0.95); padding: 2em; border-radius: 12px;">
+      <h2>📜 Privacy Challenge</h2>
+      <p id="privacyPrompt"></p>
+      <button onclick="handleChoice('accept')">✅ Accept</button>
+      <button onclick="handleChoice('reject')">❌ Reject</button>
+      <div id="privacyFeedback" style="margin-top: 1em;"></div>
+    </div>
+  </div>
+  
+<!-- Clue Popup styled like Page 4 -->
+<div id="cluePopup" class="overlay" style="display: none;">
+    <div class="overlay-content">
+      <h2>🔍 Clue Unlocked!</h2>
+      <h3>[App compromises privacy]</h3>
+      <p>🧭 You’ve successfully navigated the maze without compromising your privacy!</p>
+      <button onclick="closeCluePopup()">Close</button>
+    </div>
+  </div>
+
+  <!-- Wrong Answer Explanation Popup -->
+<div id="wrongReasonPopup" class="overlay" style="display: none;">
+  <div class="overlay-content">
+    <h2>⚠️ Not Quite Right</h2>
+    <p id="reasonText"></p>
+    <button onclick="closeReasonPopup()" style="
+  margin-top: 1.5em;
+  padding: 0.8em 2em;
+  background-color: #e74c3c;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 1.1em;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
+">Try Again</button>
+  </div>
+</div>
+
+  
+<script>
+  // Utility Functions
+function rand(max) { return Math.floor(Math.random() * max); }
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function changeBrightness(factor, sprite) {
+  const virtCanvas = document.createElement("canvas");
+  virtCanvas.width = 500;
+  virtCanvas.height = 500;
+  const ctx = virtCanvas.getContext("2d");
+  ctx.drawImage(sprite, 0, 0, 500, 500);
+  const imgData = ctx.getImageData(0, 0, 500, 500);
+  for (let i = 0; i < imgData.data.length; i += 4) {
+    imgData.data[i] *= factor;
+    imgData.data[i + 1] *= factor;
+    imgData.data[i + 2] *= factor;
+  }
+  ctx.putImageData(imgData, 0, 0);
+  const output = new Image();
+  output.src = virtCanvas.toDataURL();
+  return output;
+}
+
+function displayVictoryMess(moves) {
+  document.getElementById("cluePopup").style.display = "flex";
+}
+
+function closeCluePopup() {
+  // Set a flag indicating they finished the maze
+  localStorage.setItem("resumeFromMaze", "true");
+
+  // Redirect to Page 8
+  window.location.href = "DC2_Pg8_C2.html";
+}
+
+class Maze {
+  constructor(width, height) {
+    this.width = width;
+    this.height = height;
+    this.startCoord = null;
+    this.endCoord = null;
+    this.map = this.generate();
+  }
+
+  generate() {
+  let map, longestPath;
+  do {
+    map = Array.from({ length: this.width }, () =>
+      Array.from({ length: this.height }, () => ({
+        n: false, s: false, e: false, w: false,
+        visited: false, priorPos: null
+      }))
+    );
+
+    let pos = { x: 0, y: 0 };
+    let cellsVisited = 1;
+    const total = this.width * this.height;
+    const dirs = ["n", "s", "e", "w"];
+    const mod = { n: [0, -1], s: [0, 1], e: [1, 0], w: [-1, 0] };
+    const opp = { n: "s", s: "n", e: "w", w: "e" };
+
+    while (cellsVisited < total) {
+      map[pos.x][pos.y].visited = true;
+      shuffle(dirs);
+      let moved = false;
+      for (let dir of dirs) {
+        const nx = pos.x + mod[dir][0];
+        const ny = pos.y + mod[dir][1];
+        if (nx >= 0 && ny >= 0 && nx < this.width && ny < this.height && !map[nx][ny].visited) {
+          map[pos.x][pos.y][dir] = true;
+          map[nx][ny][opp[dir]] = true;
+          map[nx][ny].priorPos = pos;
+          pos = { x: nx, y: ny };
+          cellsVisited++;
+          moved = true;
+          break;
+        }
+      }
+      if (!moved) pos = map[pos.x][pos.y].priorPos;
+    }
+
+    this.map = map;
+    longestPath = this.findLongestPath();
+  } while (longestPath.length < 60); // ← Ensures path is at least 60 steps
+
+  this.startCoord = longestPath[0];
+  this.endCoord = longestPath[longestPath.length - 1];
+
+  return map;
+}
+findLongestPath() {
+  const visited = Array.from({ length: this.width }, () => Array(this.height).fill(false));
+  const move = { n: [0, -1], s: [0, 1], e: [1, 0], w: [-1, 0] };
+  let longest = [];
+
+  const dfs = (x, y, path) => {
+    visited[x][y] = true;
+    path.push({ x, y });
+
+    for (let dir in move) {
+      const nx = x + move[dir][0];
+      const ny = y + move[dir][1];
+      if (
+        nx >= 0 && ny >= 0 &&
+        nx < this.width && ny < this.height &&
+        this.map[x][y][dir] && !visited[nx][ny]
+      ) {
+        dfs(nx, ny, path);
+      }
+    }
+
+    if (path.length > longest.length) longest = [...path];
+    path.pop();
+    visited[x][y] = false;
+  };
+
+  for (let x = 0; x < this.width; x++) {
+    for (let y = 0; y < this.height; y++) {
+      dfs(x, y, []);
+    }
+  }
+
+  return longest;
+}
+}
+
+class DrawMaze {
+  constructor(maze, ctx, cellSize, endSprite) {
+    this.ctx = ctx;
+    this.maze = maze;
+    this.cellSize = cellSize;
+    this.map = maze.map;
+    this.endSprite = endSprite;
+    this.draw();
+  }
+
+  drawCell(x, y, cell) {
+    const s = this.cellSize;
+    const ctx = this.ctx;
+    const px = x * s;
+    const py = y * s;
+
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = s / 30;
+    if (!cell.n) { ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + s, py); ctx.stroke(); }
+    if (!cell.s) { ctx.beginPath(); ctx.moveTo(px, py + s); ctx.lineTo(px + s, py + s); ctx.stroke(); }
+    if (!cell.e) { ctx.beginPath(); ctx.moveTo(px + s, py); ctx.lineTo(px + s, py + s); ctx.stroke(); }
+    if (!cell.w) { ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, py + s); ctx.stroke(); }
+  }
+
+  drawEnd() {
+    const { x, y } = this.maze.endCoord;
+    const s = this.cellSize;
+    const img = this.endSprite;
+    const offset = s * 0.1;
+    this.ctx.drawImage(img, x * s + offset, y * s + offset, s - 2 * offset, s - 2 * offset);
+  }
+
+  draw() {
+    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    for (let x = 0; x < this.map.length; x++) {
+      for (let y = 0; y < this.map[x].length; y++) {
+        this.drawCell(x, y, this.map[x][y]);
+      }
+    }
+    this.drawEnd();
+  }
+}
+
+class Player {
+  constructor(maze, canvas, cellSize, onComplete, sprite, drawMazeInstance) {
+    this.ctx = canvas.getContext("2d");
+    this.maze = maze;
+    this.sprite = sprite;
+    this.cellSize = cellSize;
+    this.onComplete = onComplete;
+    this.coord = { ...maze.startCoord };
+    this.moves = 0;
+    this.drawer = drawMazeInstance; // <== store instance
+    this.draw();
+    this.listen();
+  }
+
+  draw() {
+    const { x, y } = this.coord;
+    const offset = this.cellSize * 0.1;
+    this.ctx.drawImage(this.sprite, x * this.cellSize + offset, y * this.cellSize + offset, this.cellSize - 2 * offset, this.cellSize - 2 * offset);
+  }
+
+  clear() {
+    const { x, y } = this.coord;
+    const s = this.cellSize;
+    this.ctx.clearRect(x * s, y * s, s, s);
+    const cell = this.maze.map[x][y];
+
+    // Use existing drawer to restore just this cell
+    this.drawer.drawCell(x, y, cell);
+  }
+
+  listen() {
+    document.addEventListener("keydown", this.handleKey = (e) => {
+      const dirMap = { 37: "w", 38: "n", 39: "e", 40: "s" };
+      const dir = dirMap[e.keyCode];
+      if (!dir) return;
+
+      const cell = this.maze.map[this.coord.x][this.coord.y];
+      if (!cell[dir]) return;
+
+      const moves = { n: [0, -1], s: [0, 1], e: [1, 0], w: [-1, 0] };
+      const [dx, dy] = moves[dir];
+      this.clear();
+      this.coord.x += dx;
+      this.coord.y += dy;
+      this.moves++;
+      this.draw();
+
+      if (this.moves % 15 === 0) {
+  showPrivacyPopup();
+}
+
+      const end = this.maze.endCoord;
+      if (this.coord.x === end.x && this.coord.y === end.y) {
+        document.removeEventListener("keydown", this.handleKey);
+        this.onComplete(this.moves);
+      }
+    });
+  }
+}
+
+// Main: Load sprites and generate maze
+window.onload = () => {
+  const canvas = document.getElementById("mazeCanvas");
+  const size = Math.min(window.innerWidth, window.innerHeight) * 0.9;
+  canvas.width = canvas.height = size;
+  const cellCount = 10;
+
+  const playerSprite = new Image();
+  const endSprite = new Image();
+
+  playerSprite.src = "unlock.png";     // 👈 Your actual player PNG file
+  endSprite.src = "lock.png";         // 👈 Your actual house/goal PNG file
+
+  playerSprite.onload = () => {
+    endSprite.onload = () => {
+      const cellSize = canvas.width / cellCount;
+      const maze = new Maze(cellCount, cellCount);
+      const drawMazeInstance = new DrawMaze(maze, canvas.getContext("2d"), cellSize, endSprite);
+      const player = new Player(maze, canvas, cellSize, displayVictoryMess, playerSprite, drawMazeInstance);
+    };
+  };
+};
+    
+const prompts = [
+    {
+      text: "Downloading the app gives permission to scan all faces for AI recreation and sharing with partners. Do you accept?",
+      correct: "reject"
+    },
+    {
+      text: "Your biometric data may be used for third-party emotion analysis tools. Accept or Reject?",
+      correct: "reject"
+    },
+    {
+      text: "Facial patterns will be stored even after uninstall. Accept?",
+      correct: "reject"
+    },
+    {
+      text: "Enable camera access even when the app is closed?",
+      correct: "reject"
+    }
+  ];
+
+  const reasons = {
+  0: "Scanning your face for AI recreation means your identity can be cloned — and once it’s shared with partners, you lose control of how it's used.",
+  1: "Biometric data is deeply personal — sending it to unknown companies for emotion tracking is invasive and risky.",
+  2: "Keeping your facial data after you delete the app means they can continue using your identity without your consent.",
+  3: "Allowing access when the app is closed means it could secretly record you anytime — a serious privacy danger."
+};
+
+  let privacyStepIndex = 0;
+
+  function showPrivacyPopup() {
+  if (privacyStepIndex >= prompts.length) return; // Stop showing if all are done
+
+  const prompt = prompts[privacyStepIndex];
+  document.getElementById("privacyPrompt").innerText = prompt.text;
+  document.getElementById("privacyFeedback").innerText = "";
+  document.getElementById("privacyGame").style.display = "flex";
+}
+
+function handleChoice(choice) {
+  const current = prompts[privacyStepIndex];
+  const feedback = document.getElementById("privacyFeedback");
+
+  if (choice === current.correct) {
+    feedback.innerHTML = `<span style='color: lightgreen;'>Correct. ✅</span>`;
+    privacyStepIndex++;
+    setTimeout(() => {
+      document.getElementById("privacyGame").style.display = "none";
+    }, 2000);
+  } else {
+    // Show reasoning popup for wrong choice
+    document.getElementById("privacyGame").style.display = "none";
+    document.getElementById("reasonText").innerText = reasons[privacyStepIndex];
+    document.getElementById("wrongReasonPopup").style.display = "flex";
+  }
+}
+  privacyStepIndex++;
+
+  setTimeout(() => {
+    document.getElementById("privacyGame").style.display = "none";
+  }, 2000);
+
+localStorage.setItem("clueUnlocked", "true");
+
+setTimeout(() => {
+    const fade = document.getElementById('fadeOverlay');
+    if (fade) fade.remove();
+  }, 2000);
+
+  function closeReasonPopup() {
+  document.getElementById("wrongReasonPopup").style.display = "none";
+  document.getElementById("privacyGame").style.display = "flex";
+}
+  
+</script>
+
+</body>
+</html>

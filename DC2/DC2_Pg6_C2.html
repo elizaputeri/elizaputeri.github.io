@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GlowSnap AI - App Store Page</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #000;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .laptop-overlay-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .viewport-frame {
+      position: fixed;
+      top: 43%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      max-width: 1156px;
+      max-height: 646px;
+      transform: translate(-50%, -50%) scale(0.8);
+      transform-origin: center;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      background-color: #f5f5f7;
+      border-radius: 20px;
+      z-index: 1;
+      box-shadow: 0 0 12px rgba(0,0,0,0.5);
+    }
+
+    .sidebar {
+      width: 240px;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      background-color: #ffffff;
+      border-right: 1px solid #ddd;
+      padding-top: 80px;
+    }
+
+    .sidebar ul {
+  list-style: none;
+  padding-left: 10px;
+}
+
+.sidebar ul li {
+  padding: 12px 36px; /* Pushes text right, hides bullet spacing */
+  cursor: default;
+}
+
+    .sidebar ul li {
+      padding: 12px 24px;
+      cursor: default;
+    }
+
+    .main {
+      margin-left: 260px;
+      padding: 40px;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      background-color: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    .app-icon {
+      width: 100px;
+      height: 100px;
+      border-radius: 24px;
+      margin-right: 24px;
+      background: #ccc;
+      background-size: cover;
+    }
+
+    .install-btn {
+      background-color: #34c759;
+      color: white;
+      padding: 10px 24px;
+      border-radius: 12px;
+      text-decoration: none;
+      margin-top: 8px;
+      display: inline-block;
+    }
+
+    .section {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 32px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      position: relative;
+    }
+
+    .see-details {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      font-size: 0.9em;
+      color: #007aff;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-weight: bold;
+    }
+
+    .footer {
+      margin-top: 48px;
+      padding: 24px;
+      text-align: center;
+      font-size: 14px;
+      color: #888;
+    }
+
+    #instructionOverlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background-color: rgba(0, 0, 0, 0.9);
+      color: white;
+      z-index: 10001;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .overlay-content {
+      text-align: center;
+      max-width: 600px;
+      padding: 2em;
+      background: rgba(30, 30, 30, 0.95);
+      border-radius: 12px;
+    }
+
+    .overlay-content button {
+      margin-top: 1em;
+      padding: 0.6em 1.2em;
+      background: #a56cf4;
+      border: none;
+      border-radius: 8px;
+      color: rgb(255, 255, 255);
+      font-size: 1em;
+      cursor: pointer;
+    }
+
+    #privacyPanel {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 400px;
+      height: 100%;
+      background-color: #ffffff;
+      box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+      z-index: 10002;
+      transition: right 0.4s ease;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    #privacyPanel.show {
+      right: 0;
+    }
+
+    #privacyPanel .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 1.2em;
+      cursor: pointer;
+      color: #888;
+    }
+
+    #privacyGame {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: none;
+      z-index: 10005;
+      background-color: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .install-btn.disabled {
+      background-color: grey;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Instruction Overlay -->
+  <div id="instructionOverlay">
+    <div class="overlay-content">
+      <h2>🕵️ Case 2 Briefing</h2>
+      <p>Detective, your mission is to assess the legitimacy of this app. Review its features and privacy details carefully.</p>
+      <button onclick="startInvestigation()">Start Investigation</button>
+    </div>
+  </div>
+
+  <!-- Top Instruction Banner -->
+  <div id="topInstructionBanner" style="
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0,0,0,0.85);
+  color: white;
+  text-align: center;
+  padding: 1em;
+  font-size: 1.1em;
+  z-index: 10000;
+  ">
+  🔍 Now tap 'See Details' to inspect the privacy policy. Then press 'Get' to continue.
+  </div>
+
+  <!-- Slide-in Panel (Updated Content) -->
+<div id="privacyPanel">
+  <button class="close-btn" onclick="togglePrivacyPanel()">✖</button>
+  <h2>App Privacy</h2>
+  <p><strong>The developer, <span style="color: green">FaceTrend</span></strong> indicated that the app’s privacy practices may include handling of data as described below.</p>
+  <p>This information has not been verified by Apple.</p>
+  <hr>
+
+  <div style="margin-top: 1.5em;">
+    <ul style="list-style: none; padding-left: 0;">
+      <li>
+        <strong>🔗 Data Linked to You</strong><br>
+        <span style="color: #666; font-size: 0.9em;">The following data, which may be collected and associated with your identity or device, is used for the purposes listed below:</span>
+      </li>
+      <li style="margin-top: 1em;">
+        <strong>👤 Face Scans</strong><br>
+        <span style="color: #666; font-size: 0.9em;">All captured facial data is retained and may be analyzed for beauty trend forecasting, partner research, and promotional adaptation.</span>
+      </li>
+      <li style="margin-top: 1em;">
+        <strong>🔻 Consent by Installation</strong><br>
+        <span style="color: #666; font-size: 0.9em;">By downloading, users grant the developer and affiliates the right to process and reuse biometric patterns without further notice.</span>
+      </li>
+      <li style="margin-top: 1em;">
+        <strong>📍 Background Tracking</strong><br>
+        <span style="color: #666; font-size: 0.9em;">Location data and screen interactions may be monitored even when the app is not in use.</span>
+      </li>
+    </ul>
+  </div>
+</div>
+
+  <!-- App Content -->
+  <div class="viewport-frame">
+    <div class="sidebar">
+      <ul>
+        <li>Discover ☌</li><li>Arcade ♖</li><li>Create ♡</li><li>Work ䷑</li><li>Develop ✐</li><li>Categories ☞</li><li>Updates ☏</li>
+      </ul>
+    </div>
+    <div class="main">
+      <div class="app-header">
+        <div class="app-icon" style="background-image: url('DC2_App.png');"></div>
+        <div class="app-meta">
+          <h1>GlowSnap AI</h1>
+          <p>Transform your look with next-gen AI beauty filters.</p>
+          <a id="getBtn" href="#" class="install-btn disabled">Get</a>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>What’s New</h2>
+        <p>New glow-up filter pack, enhanced realism engine, and improved sparkle effects.</p>
+      </div>
+
+      <div class="section">
+        <h2>App Privacy</h2>
+        <button class="see-details" onclick="unlockGetButton()">See Details</button>
+        <div class="privacy-box">
+          <strong>Data Linked to You</strong><br>
+          📸 Facial Data<br>
+          📂 User Content<br>
+          🧠 Biometric Patterns<br>
+          📍 Location
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>🔐 Developer Notes (Confidential)</h2>
+        <button onclick="revealSecrets()">Reveal Hidden Logs</button>
+        <div id="hiddenTruths" style="display:none; margin-top: 1em;">
+          - Facial data synced with central repository<br>
+          - Tracking runs even in background<br>
+          <button onclick="logClue('🧩 Secret data sync revealed.')">📔 Add to Notebook</button>
+        </div>
+      </div>
+
+      <div class="footer">
+        &copy; 2025 FaceTrend Ltd. | <p>Privacy Policy</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay Image -->
+  <div class="overlay">
+    <img src="DC2_Laptop_C2.png" class="laptop-overlay-img" alt="Laptop Overlay" />
+  </div>
+
+  <div id="reminderPopup" style="
+  display: none;
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  background: #222;
+  color: #fff;
+  padding: 1em 1.4em;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+  z-index: 10011;
+  font-size: 0.95em;
+  max-width: 220px;
+  ">
+  ⚠️ Press the Get button and finish the challenge.
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    function startInvestigation() {
+      document.getElementById("instructionOverlay").style.display = "none";
+      document.getElementById("topInstructionBanner").style.display = "block";
+      localStorage.setItem("dc2_pg6_progress", "maze_started");
+    }
+
+    function togglePrivacyPanel() {
+      document.getElementById("privacyPanel").classList.toggle("show");
+    }
+
+    function revealSecrets() {
+      const popup = document.getElementById("reminderPopup");
+      popup.style.display = "block";
+      setTimeout(() => {
+        popup.style.display = "none";
+      }, 3000);
+    }
+
+    function unlockGetButton() {
+      togglePrivacyPanel();
+      const getBtn = document.getElementById("getBtn");
+      getBtn.classList.remove("disabled");
+      getBtn.href = "DC2_Pg7_C2.html";
+    }
+  </script>
+</body>
+</html>

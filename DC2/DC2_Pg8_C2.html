@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GlowSnap AI - App Store Page</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #000;
+      overflow: auto;
+      position: relative;
+    }
+
+    .laptop-overlay-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .laptop-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5; /* below popups */
+    }
+
+    .viewport-frame {
+      position: fixed;
+      top: 43%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      max-width: 1156px;
+      max-height: 646px;
+      transform: translate(-50%, -50%) scale(0.8);
+      transform-origin: center;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      background-color: #f5f5f7;
+      border-radius: 20px;
+      z-index: 1;
+      box-shadow: 0 0 12px rgba(0,0,0,0.5);
+      padding-top: 3.5em;
+      box-sizing: border-box;
+    }
+
+    .sidebar {
+      width: 240px;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      background-color: #fff;
+      border-right: 1px solid #ddd;
+      padding-top: 80px;
+      z-index: 10;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding-left: 10px;
+    }
+
+    .sidebar ul li {
+      padding: 12px 36px;
+      cursor: default;
+    }
+
+    .main {
+      margin-left: 260px;
+      padding: 40px;
+      position: relative;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      background-color: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .app-icon {
+      width: 100px;
+      height: 100px;
+      border-radius: 24px;
+      margin-right: 24px;
+      background: #ccc;
+      background-size: cover;
+    }
+
+    .install-btn {
+      background-color: #34c759;
+      color: white;
+      padding: 10px 24px;
+      border-radius: 12px;
+      text-decoration: none;
+      margin-top: 8px;
+      display: inline-block;
+      position: relative;
+      z-index: 1;
+    }
+
+    .install-btn.disabled {
+      background-color: grey;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .section {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 32px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      position: relative;
+    }
+
+    .see-details {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      font-size: 0.9em;
+      color: #007aff;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-weight: bold;
+      z-index: 1;
+    }
+
+    .footer {
+      margin-top: 48px;
+      padding: 24px;
+      text-align: center;
+      font-size: 14px;
+      color: #888;
+    }
+
+    .footer-content {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: #888;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Proceed to Story button styling */
+    #proceedStoryBtn {
+      display: none; /* initially hidden */
+      padding: 8px 24px;
+      background-color: #6a0dad; /* purple */
+      color: white;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 18px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 0 15px #9b30ff;
+      animation: pulse 2s infinite;
+      vertical-align: middle;
+      transition: background-color 0.3s ease;
+    }
+
+    #proceedStoryBtn:hover {
+      background-color: #4b0082;
+      box-shadow: 0 0 25px #bf40bf;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 10px #9b30ff;
+      }
+      50% {
+        box-shadow: 0 0 25px #bf40bf;
+      }
+      100% {
+        box-shadow: 0 0 10px #9b30ff;
+      }
+    }
+
+    /* Overlay for clue popup */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.85);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+
+    .overlay-content {
+      text-align: center;
+      max-width: 600px;
+      padding: 2em;
+      background: rgba(30, 30, 30, 0.9);
+      border-radius: 12px;
+    }
+
+    #cluePopup button {
+      margin-top: 1em;
+      padding: 0.8em 2em;
+      background-color: #2ebd89;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 1.2em;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(195, 255, 210, 0.6);
+      transition: background-color 0.3s ease;
+    }
+
+    #cluePopup button:hover {
+      background-color: #24946b;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="viewport-frame">
+    <div class="sidebar">
+      <ul>
+        <li>Discover ☌</li>
+        <li>Arcade ♖</li>
+        <li>Create ♡</li>
+        <li>Work ䷑</li>
+        <li>Develop ✐</li>
+        <li>Categories ☞</li>
+        <li>Updates ☏</li>
+      </ul>
+    </div>
+    <div class="main">
+      <div class="app-header">
+        <div class="app-icon" style="background-image: url('DC2_App.png');"></div>
+        <div class="app-meta">
+          <h1>GlowSnap AI</h1>
+          <p>Transform your look with next-gen AI beauty filters.</p>
+          <a id="getBtn" href="#" class="install-btn disabled">Get</a>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>What’s New</h2>
+        <p>New glow-up filter pack, enhanced realism engine, and improved sparkle effects.</p>
+      </div>
+
+      <div class="section">
+        <h2>App Privacy</h2>
+        <button class="see-details" onclick="unlockGetButton()">See Details</button>
+        <div class="privacy-box">
+          <strong>Data Linked to You</strong><br>
+          📸 Facial Data<br>
+          📂 User Content<br>
+          🧠 Biometric Patterns<br>
+          📍 Location
+        </div>
+      </div>
+
+      <div class="section" id="developerNotesSection">
+        <h2>🔐 Developer Notes (Confidential)</h2>
+        <button onclick="revealSecrets()">Reveal Hidden Logs</button>
+        <div id="hiddenTruths" style="display:none; margin-top: 1em;">
+          -Facial data shared with brokers<br>
+          - Eye movement tracked during use<br>
+          - Contacts uploaded without clear alert<br>
+          - Microphone listens during phone calls<br>
+          - Typing behavior patterns are tracked<br>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="footer-content">
+          &copy; 2025 FaceTrend Ltd.
+          <p style="display: inline; margin: 0 8px;">Privacy Policy</p>
+          <a href="DC2_Pg9_Finale.html" id="proceedStoryBtn">Proceed to Story</a>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <div class="laptop-overlay">
+    <img src="DC2_Laptop_C2.png" class="laptop-overlay-img" alt="Laptop Overlay" />
+  </div>
+
+  <div id="topInstructionBanner" style="
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0,0,0,0.85);
+    color: white;
+    text-align: center;
+    padding: 1em;
+    font-size: 1.1em;
+    z-index: 11000;
+  ">
+    🔍 Finally one last clue! Tap "Reveal Hidden Logs"
+  </div>
+
+  <div id="cluePopup" class="overlay" style="display:none;">
+    <div class="overlay-content">
+      <h2>🔍 Clue Unlocked!</h2>
+      <h3>[Hidden tracking of private data]</h3>
+      <p>🧭 You’ve uncovered the last clue! Well done!</p>
+      <button onclick="closeCluePopup()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    function revealSecrets() {
+      const hidden = document.getElementById("hiddenTruths");
+      hidden.style.display = "block"; // reveal developer logs
+      document.getElementById("cluePopup").style.display = "flex"; // show clue overlay
+      document.getElementById("topInstructionBanner").style.display = "none"; // hide banner
+
+      // Show Proceed to Story button now
+      document.getElementById('proceedStoryBtn').style.display = 'inline-block';
+    }
+
+    function closeCluePopup() {
+      document.getElementById("cluePopup").style.display = "none";
+    }
+  </script>
+</body>
+</html>
